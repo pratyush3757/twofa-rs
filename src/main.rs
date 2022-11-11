@@ -1,6 +1,7 @@
 mod models;
 mod token;
-use models::HmacHash;
+use models::{Account, HmacHash};
+use std::str::FromStr;
 
 fn main() {
     let hmac_token = token::hmac::create_token();
@@ -49,4 +50,18 @@ fn main() {
         );
     }
     println!("Matched all totp cases");
+
+    let uri = "otpauth://totp/ACME%20Co%3A%20%20%20john.doe@email.com?\
+               secret=HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ&issuer=ACME%20Co&algorithm=SHA512&digits=8&period=60";
+    let hotp_uri = "otpauth://hotp/ACMECo:john.doe@email.com?\
+                    secret=HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ&issuer=ACMECo&algorithm=SHA256&digits=8&counter=300";
+    let acc1 = match Account::from_str(uri) {
+        Ok(x) => x,
+        Err(e) => panic!("{e}"),
+    };
+    let acc2 = match Account::from_str(hotp_uri) {
+        Ok(x) => x,
+        Err(e) => panic!("{e}"),
+    };
+    println!("{acc1}\n{acc2}");
 }
