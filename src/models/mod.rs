@@ -47,12 +47,16 @@ impl Account {
             0 => ("", label),
             1 => decoded_s.split_once(':').unwrap_or(("", label)),
             _ => {
-                return Err(AccountError::Parsing(
-                    "malformed input: invalid issuer field".to_string(),
-                ))
+                return Err(AccountError::Parsing(format!(
+                    "malformed input: invalid issuer field"
+                )))
             }
         };
         Ok((issuer.trim().to_string(), account_name.trim().to_string()))
+    }
+
+    pub fn update_secret_key(&mut self, new_key: String) {
+        self.parameters.secret_key = new_key;
     }
 }
 
@@ -118,35 +122,41 @@ impl fmt::Display for Parameters {
 impl FromStr for Account {
     type Err = AccountError;
     fn from_str(s: &str) -> Result<Self, AccountError> {
-        let (uri, query) = s
-            .split_once('?')
-            .ok_or(AccountError::Parsing("missing uri parameters".to_string()))?;
+        let (uri, query) = s.split_once('?').ok_or(AccountError::Parsing(format!(
+            "missing uri parameters:\n{s}"
+        )))?;
 
-        let params: Parameters = Parameters::from_str(query)?;
+        let params: Parameters = match Parameters::from_str(query) {
+            Ok(x) => x,
+            Err(err) => return Err(AccountError::Parsing(format!("{err}:\n{s}"))),
+        };
 
         let (protocol, uri) = uri
             .split_once("://")
-            .ok_or(AccountError::Parsing("missing protocol".to_string()))?;
+            .ok_or(AccountError::Parsing(format!("missing protocol:\n{s}")))?;
 
         if protocol != "otpauth" {
-            return Err(AccountError::Parsing("wrong protocol".to_string()));
+            return Err(AccountError::Parsing(format!("wrong protocol:\n{s}")));
         }
 
-        let (otp_type, label) = uri.split_once('/').ok_or(AccountError::Parsing(
-            "missing otp type or label".to_string(),
-        ))?;
+        let (otp_type, label) = uri.split_once('/').ok_or(AccountError::Parsing(format!(
+            "missing otp type or label:\n{s}"
+        )))?;
 
         let otp_type = match otp_type {
             "hotp" => OtpType::HOTP,
             "totp" => OtpType::TOTP,
-            _ => return Err(AccountError::Parsing("wrong otp type".to_string())),
+            _ => return Err(AccountError::Parsing(format!("wrong otp type:\n{s}"))),
         };
 
         if otp_type == OtpType::HOTP && params.counter == -1 {
-            return Err(AccountError::Parsing("missing hotp counter".to_string()));
+            return Err(AccountError::Parsing(format!("missing hotp counter:\n{s}")));
         }
 
-        let (label_issuer, label_account_name) = Account::decode_label(label)?;
+        let (label_issuer, label_account_name) = match Account::decode_label(label) {
+            Ok((x, y)) => (x, y),
+            Err(err) => return Err(AccountError::Parsing(format!("{err}:\n{s}"))),
+        };
 
         Ok(Account {
             protocol: protocol.to_string(),
@@ -169,9 +179,9 @@ impl FromStr for Parameters {
         let mut counter: i64 = -1;
         let mut step_period: u8 = 30;
         for item in params {
-            let (key, value) = item.split_once('=').ok_or(AccountError::Parsing(
-                "please check the query parameters".to_string(),
-            ))?;
+            let (key, value) = item.split_once('=').ok_or(AccountError::Parsing(format!(
+                "please check the query parameters"
+            )))?;
             match key {
                 "secret" => secret_key = value,
                 "issuer" => issuer = value,
@@ -190,9 +200,7 @@ impl FromStr for Parameters {
             }
         }
         if secret_key == "" || issuer == "" {
-            return Err(AccountError::Parsing(
-                "required fields are empty".to_string(),
-            ));
+            return Err(AccountError::Parsing(format!("required fields are empty")));
         }
 
         let issuer = percent_decode_str(issuer).decode_utf8_lossy();

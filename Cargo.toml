@@ -1,5 +1,5 @@
 [package]
-name = "rsauth"
+name = "twofa-rs"
 version = "0.2.0"
 edition = "2021"
 

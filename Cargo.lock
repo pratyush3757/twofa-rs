@@ -134,18 +134,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rsauth"
-version = "0.2.0"
-dependencies = [
- "byteorder",
- "hex",
- "percent-encoding",
- "regex",
- "ring",
- "thiserror",
-]
-
-[[package]]
 name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -180,6 +168,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "twofa-rs"
+version = "0.2.0"
+dependencies = [
+ "byteorder",
+ "hex",
+ "percent-encoding",
+ "regex",
+ "ring",
+ "thiserror",
 ]
 
 [[package]]
