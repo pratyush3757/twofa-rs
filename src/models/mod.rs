@@ -10,7 +10,7 @@ pub enum AccountError {
     Parsing(String),
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum HmacHash {
     SHA1,
     SHA256,
@@ -47,9 +47,9 @@ impl Account {
             0 => ("", label),
             1 => decoded_s.split_once(':').unwrap_or(("", label)),
             _ => {
-                return Err(AccountError::Parsing(format!(
-                    "malformed input: invalid issuer field"
-                )))
+                return Err(AccountError::Parsing(
+                    "malformed input: invalid issuer field".to_string(),
+                ))
             }
         };
         Ok((issuer.trim().to_string(), account_name.trim().to_string()))
@@ -122,9 +122,9 @@ impl fmt::Display for Parameters {
 impl FromStr for Account {
     type Err = AccountError;
     fn from_str(s: &str) -> Result<Self, AccountError> {
-        let (uri, query) = s.split_once('?').ok_or(AccountError::Parsing(format!(
-            "missing uri parameters:\n{s}"
-        )))?;
+        let (uri, query) = s
+            .split_once('?')
+            .ok_or_else(|| AccountError::Parsing(format!("missing uri parameters:\n{s}")))?;
 
         let params: Parameters = match Parameters::from_str(query) {
             Ok(x) => x,
@@ -133,15 +133,15 @@ impl FromStr for Account {
 
         let (protocol, uri) = uri
             .split_once("://")
-            .ok_or(AccountError::Parsing(format!("missing protocol:\n{s}")))?;
+            .ok_or_else(|| AccountError::Parsing(format!("missing protocol:\n{s}")))?;
 
         if protocol != "otpauth" {
             return Err(AccountError::Parsing(format!("wrong protocol:\n{s}")));
         }
 
-        let (otp_type, label) = uri.split_once('/').ok_or(AccountError::Parsing(format!(
-            "missing otp type or label:\n{s}"
-        )))?;
+        let (otp_type, label) = uri
+            .split_once('/')
+            .ok_or_else(|| AccountError::Parsing(format!("missing otp type or label:\n{s}")))?;
 
         let otp_type = match otp_type {
             "hotp" => OtpType::HOTP,
@@ -161,8 +161,8 @@ impl FromStr for Account {
         Ok(Account {
             protocol: protocol.to_string(),
             otp_type,
-            label_issuer: label_issuer.to_string(),
-            label_account_name: label_account_name.to_string(),
+            label_issuer,
+            label_account_name,
             parameters: params,
         })
     }
@@ -179,9 +179,9 @@ impl FromStr for Parameters {
         let mut counter: i64 = -1;
         let mut step_period: u8 = 30;
         for item in params {
-            let (key, value) = item.split_once('=').ok_or(AccountError::Parsing(format!(
-                "please check the query parameters"
-            )))?;
+            let (key, value) = item.split_once('=').ok_or_else(|| {
+                AccountError::Parsing("please check the query parameters".to_string())
+            })?;
             match key {
                 "secret" => secret_key = value,
                 "issuer" => issuer = value,
@@ -199,8 +199,10 @@ impl FromStr for Parameters {
                 _ => (),
             }
         }
-        if secret_key == "" || issuer == "" {
-            return Err(AccountError::Parsing(format!("required fields are empty")));
+        if secret_key.is_empty() || issuer.is_empty() {
+            return Err(AccountError::Parsing(
+                "required fields are empty".to_string(),
+            ));
         }
 
         let issuer = percent_decode_str(issuer).decode_utf8_lossy();

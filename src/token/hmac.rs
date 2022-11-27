@@ -8,7 +8,7 @@ pub fn create_token() -> String {
                                  \x0b\x0b\x0b\x0b";
     let msg = hex::decode("4869205468657265").expect("00");
     let hmac_key = hmac::Key::new(hmac::HMAC_SHA1_FOR_LEGACY_USE_ONLY, key_value.as_ref());
-    let tag = hmac::sign(&hmac_key, &msg.as_ref());
+    let tag = hmac::sign(&hmac_key, msg.as_ref());
 
     hex::encode(tag.as_ref())
 }
@@ -32,7 +32,7 @@ pub fn compute_hmac(
         Err(_) => vec![0],
     };
     let hmac_key = hmac::Key::new(algo, hmac_key.as_ref());
-    let tag = hmac::sign(&hmac_key, &msg.as_ref());
+    let tag = hmac::sign(&hmac_key, msg.as_ref());
 
     hex::encode(tag.as_ref())
 }

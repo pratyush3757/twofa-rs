@@ -36,9 +36,9 @@ pub fn compute_hotp(key: &str, counter: i64, digits: u8, hash_algorithm: HmacHas
     };
     let truncated_decimal_otp = {
         (u32::from(mac[offset] & 0x7f) << 24)
-            | (u32::from(mac[offset + 1] & 0xff) << 16)
-            | (u32::from(mac[offset + 2] & 0xff) << 8)
-            | u32::from(mac[offset + 3] & 0xff)
+            | (u32::from(mac[offset + 1]) << 16)
+            | (u32::from(mac[offset + 2]) << 8)
+            | u32::from(mac[offset + 3])
     };
     let hotp = truncated_decimal_otp % u32::pow(10, digits.into());
 

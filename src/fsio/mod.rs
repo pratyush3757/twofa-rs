@@ -1,8 +1,8 @@
 use crate::models::{Account, AccountError};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::str::FromStr;
 use std::path::Path;
+use std::str::FromStr;
 
 pub fn parse_data_file(path: String) -> Result<(String, Vec<Account>), AccountError> {
     let lines = lines_from_file(path);
@@ -12,7 +12,7 @@ pub fn parse_data_file(path: String) -> Result<(String, Vec<Account>), AccountEr
         let account = Account::from_str(line)?;
         account_vec.push(account);
     }
-    Ok((iv.to_owned(),account_vec))
+    Ok((iv.to_owned(), account_vec))
 }
 
 pub fn parse_plain_file(path: String) -> Result<Vec<Account>, AccountError> {
