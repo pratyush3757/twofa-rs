@@ -44,7 +44,7 @@ fn main() {
         (2000000000, "69279037"),
         (20000000000, "65353130"),
     ];
-    for item in time_otp_list.into_iter() {
+    for item in time_otp_list {
         assert_eq!(
             item.1,
             token::otp::compute_totp(&hex_key, item.0, code_digits, hash_algorithm, period)

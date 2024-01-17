@@ -12,13 +12,13 @@ pub fn parse_data_file(path: String) -> Result<(String, Vec<Account>), AccountEr
         let account = Account::from_str(line)?;
         account_vec.push(account);
     }
-    Ok((iv.to_owned(), account_vec))
+    Ok((iv.clone(), account_vec))
 }
 
 pub fn parse_plain_file(path: String) -> Result<Vec<Account>, AccountError> {
     let lines = lines_from_file(path);
     let mut account_vec: Vec<Account> = Vec::new();
-    for line in lines.iter() {
+    for line in &lines {
         let account = Account::from_str(line)?;
         account_vec.push(account);
     }

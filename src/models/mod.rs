@@ -187,7 +187,6 @@ impl FromStr for Parameters {
                 "issuer" => issuer = value,
                 "algorithm" => {
                     hash_algorithm = match value {
-                        "SHA1" => HmacHash::SHA1,
                         "SHA256" => HmacHash::SHA256,
                         "SHA512" => HmacHash::SHA512,
                         _ => HmacHash::SHA1,

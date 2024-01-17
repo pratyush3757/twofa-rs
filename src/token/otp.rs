@@ -3,7 +3,7 @@ use crate::token::hmac;
 use byteorder::{BigEndian, ByteOrder};
 
 pub fn compute_otp_lifetime(time: i64, step_period: u8) -> u8 {
-    step_period - (time % step_period as i64) as u8
+    step_period - (time % i64::from(step_period)) as u8
 }
 
 pub fn compute_totp(
@@ -13,7 +13,7 @@ pub fn compute_totp(
     hash_algorithm: HmacHash,
     step_period: u8,
 ) -> String {
-    let timestep = time / step_period as i64;
+    let timestep = time / i64::from(step_period);
 
     compute_hotp(key, timestep, digits, hash_algorithm)
 }
